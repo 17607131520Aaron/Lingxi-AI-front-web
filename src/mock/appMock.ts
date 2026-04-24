@@ -32,6 +32,3 @@ export const MOCK_MODULES: ModuleEntry[] = [
   },
 ];
 
-export async function fetchModules(): Promise<ModuleEntry[]> {
-  return MOCK_MODULES;
-}

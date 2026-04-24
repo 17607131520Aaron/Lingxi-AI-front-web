@@ -1,6 +1,10 @@
+import { message } from "antd";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { io, type Socket } from "socket.io-client";
-import { message } from "antd";
+import { createSession as createSessionApi, deleteSession as deleteSessionApi, listSessionMessages, listSessions } from "@/api/aiChat";
+import { clearAuthSession } from "@/utils/authSession";
+import { publishNavigate } from "@/utils/navigationBus";
+import { ApiRequestError } from "@/utils/request";
 
 type MessageRole = "user" | "assistant";
 
@@ -11,11 +15,7 @@ interface ChatMessage {
   enableWebSearch?: boolean;
 }
 
-interface ChatSession {
-  sessionId: string;
-  title: string;
-  updatedAt: number;
-}
+type ChatSession = import("@/api/aiChat").ChatSession;
 
 interface SocketChatEvent {
   sessionId?: string;
@@ -23,21 +23,7 @@ interface SocketChatEvent {
   data?: string;
 }
 
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-}
-
-interface SessionMessageApi {
-  role: MessageRole;
-  content: string;
-  enableWebSearch: boolean;
-  createdAt: number;
-}
-
 const AI_CHAT_SOCKET_URL = process.env.NEXT_PUBLIC_AI_CHAT_SOCKET_URL ?? "http://127.0.0.1:9011";
-const AI_CHAT_API_URL = process.env.NEXT_PUBLIC_AI_CHAT_API_URL ?? "http://127.0.0.1:9000";
 const TYPING_INTERVAL_MS = 25;
 const CHARS_PER_TICK = 1;
 const TITLE_STOPWORDS =
@@ -46,6 +32,10 @@ const TITLE_INTENT_PATTERN =
   /(出装|铭文|连招|打法|思路|教学|攻略|技巧|推荐|对线|克制|上分|节奏|阵容|发育|打野|辅助|装备|设置|问题|方案|总结|对比|区别)/;
 
 const useAIChat = () => {
+  const handleUnauthorized = useCallback(() => {
+    void clearAuthSession().then(() => publishNavigate({ to: "/login", replace: true }));
+  }, []);
+
   const generateSessionTitle = useCallback((question: string): string => {
     const normalized = question.replace(/\s+/g, " ").trim();
     if (!normalized) {
@@ -111,17 +101,14 @@ const useAIChat = () => {
   }, []);
 
   const refreshSessions = useCallback(async () => {
-    const response = await fetch(`${AI_CHAT_API_URL}/ai/sessions`);
-    const body: ApiResponse<ChatSession[]> = await response.json();
-    const list = body.data ?? [];
+    const list = await listSessions();
     setSessions(list);
     return list;
   }, []);
 
   const createSession = useCallback(async (): Promise<string> => {
-    const response = await fetch(`${AI_CHAT_API_URL}/ai/sessions`, { method: "POST" });
-    const body: ApiResponse<ChatSession> = await response.json();
-    const created = body.data?.sessionId ?? "";
+    const body = await createSessionApi();
+    const created = body.sessionId ?? "";
     if (!created) {
       throw new Error("新建会话失败");
     }
@@ -145,9 +132,8 @@ const useAIChat = () => {
         setMessages(cached);
         return;
       }
-      const response = await fetch(`${AI_CHAT_API_URL}/ai/sessions/${sessionId}/messages`);
-      const body: ApiResponse<SessionMessageApi[]> = await response.json();
-      const items = (body.data ?? []).map((item, index) => ({
+      const body = await listSessionMessages(sessionId);
+      const items = (body ?? []).map((item, index) => ({
         id: `${item.role}-${item.createdAt}-${index}`,
         role: item.role,
         content: item.content,
@@ -341,7 +327,11 @@ const useAIChat = () => {
       });
       await refreshSessions();
     } catch (error) {
-      appendError("[AI 服务调用失败，请稍后重试]");
+      if (error instanceof ApiRequestError && (error.status === 401 || error.code === 40102 || error.code === 40103)) {
+        handleUnauthorized();
+        return;
+      }
+      appendError(`[AI 服务调用失败，${error instanceof Error ? error.message : "请稍后重试"}]`);
       console.error(error);
     }
   }, [
@@ -352,6 +342,7 @@ const useAIChat = () => {
     ensureSocketConnected,
     ensureTypingLoop,
     generateSessionTitle,
+    handleUnauthorized,
     inputValue,
     isReplying,
     refreshSessions,
@@ -394,9 +385,14 @@ const useAIChat = () => {
         message.info("已中断当前回答，正在删除会话");
         interruptCurrentReply();
       }
-      const response = await fetch(`${AI_CHAT_API_URL}/ai/sessions/${sessionId}`, { method: "DELETE" });
-      if (!response.ok) {
-        message.error("删除会话失败，请稍后重试");
+      try {
+        await deleteSessionApi(sessionId);
+      } catch (error) {
+        if (error instanceof ApiRequestError && (error.status === 401 || error.code === 40102 || error.code === 40103)) {
+          handleUnauthorized();
+          return;
+        }
+        message.error(error instanceof Error ? error.message : "删除会话失败，请稍后重试");
         return;
       }
       delete messagesBySessionRef.current[sessionId];
@@ -419,14 +415,7 @@ const useAIChat = () => {
       }
       message.success("会话已删除");
     },
-    [
-      createSession,
-      currentSessionId,
-      interruptCurrentReply,
-      isReplying,
-      loadSessionMessages,
-      refreshSessions,
-    ],
+    [createSession, currentSessionId, handleUnauthorized, interruptCurrentReply, isReplying, loadSessionMessages, refreshSessions],
   );
 
   useEffect(() => {

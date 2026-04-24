@@ -1,10 +1,14 @@
 "use client";
 
-import { Badge, Card, Col, Divider, Empty, Layout, Row, Space, Tag, Typography } from "antd";
+import { Badge, Button, Card, Col, Divider, Empty, Layout, Row, Space, Tag, Typography } from "antd";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { getCurrentUser } from "@/api/auth";
+import { getModules } from "@/api/modules";
 import type { ModuleEntry, ModuleKind } from "@/mock/appMock";
-import { fetchModules } from "@/mock/appMock";
+import { useUserStore } from "@/store/userStore";
+import { clearAuthSession } from "@/utils/authSession";
+import { publishNavigate } from "@/utils/navigationBus";
 
 const KIND_LABEL: Record<ModuleKind, string> = {
   site: "站点",
@@ -13,17 +17,31 @@ const KIND_LABEL: Record<ModuleKind, string> = {
 };
 
 export default function HomePage() {
+  const username = useUserStore((state) => state.username) || "用户";
+  const setUser = useUserStore((state) => state.setUser);
   const [keyword, _setKeyword] = useState("");
   const [kind, _setKind] = useState<"all" | ModuleKind>("all");
   const [modules, setModules] = useState<ModuleEntry[]>([]);
 
   useEffect(() => {
-    fetchModules()
+    const checkLogin = async () => {
+      try {
+        const body = await getCurrentUser();
+        setUser(body.username);
+      } catch (_error) {
+        await clearAuthSession();
+        publishNavigate({ to: "/login", replace: true });
+      }
+    };
+
+    void checkLogin();
+
+    getModules()
       .then(setModules)
       .catch(() => {
         setModules([]);
       });
-  }, []);
+  }, [setUser]);
 
   const filtered = useMemo(() => {
     const kw = keyword.trim().toLowerCase();
@@ -47,7 +65,18 @@ export default function HomePage() {
           padding: "16px 20px",
           height: "auto",
         }}
-      ></Layout.Header>
+      >
+        <Space style={{ width: "100%", justifyContent: "space-between" }}>
+          <Typography.Text style={{ color: "rgba(230,240,255,.82)" }}>当前登录：{username}</Typography.Text>
+          <Button
+            onClick={() => {
+              void clearAuthSession().then(() => publishNavigate({ to: "/login", replace: true }));
+            }}
+          >
+            退出登录
+          </Button>
+        </Space>
+      </Layout.Header>
 
       <Layout.Content style={{ padding: "0 20px 20px", overflow: "auto" }}>
         <Row gutter={[16, 16]}>

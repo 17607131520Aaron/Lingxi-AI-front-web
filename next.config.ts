@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const AI_PROXY_TARGET = "http://127.0.0.1:9011";
+const API_PROXY_TARGET = process.env.API_PROXY_TARGET ?? "http://127.0.0.1:9000";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
       ? [
           {
             source: "/api/:path*",
-            destination: `${AI_PROXY_TARGET}/:path*`,
+            destination: `${API_PROXY_TARGET}/:path*`,
           },
         ]
       : [];
