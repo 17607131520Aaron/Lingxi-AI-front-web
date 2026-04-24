@@ -1,65 +1,167 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useEffect, useMemo, useState } from "react";
+
+import {
+  Badge,
+  Button,
+  Card,
+  Col,
+  Divider,
+  Empty,
+  Input,
+  Layout,
+  Row,
+  Segmented,
+  Space,
+  Tag,
+  Typography,
+} from "antd";
+import Link from "next/link";
+
+import { fetchModules } from "@/mock/appMock";
+import type { ModuleEntry, ModuleKind } from "@/mock/appMock";
+
+const KIND_LABEL: Record<ModuleKind, string> = {
+  site: "站点",
+  cms: "企业系统",
+  tool: "工具",
+};
+
+export default function HomePage() {
+  const [keyword, setKeyword] = useState("");
+  const [kind, setKind] = useState<"all" | ModuleKind>("all");
+  const [modules, setModules] = useState<ModuleEntry[]>([]);
+
+  useEffect(() => {
+    fetchModules()
+      .then(setModules)
+      .catch(() => {
+        setModules([]);
+      });
+  }, []);
+
+  const filtered = useMemo(() => {
+    const kw = keyword.trim().toLowerCase();
+    return modules.filter((m) => {
+      if (kind !== "all" && m.kind !== kind) {
+        return false;
+      }
+      if (!kw) {
+        return true;
+      }
+      const hay =
+        `${m.name} ${m.description} ${(m.tags ?? []).join(" ")}`.toLowerCase();
+      return hay.includes(kw);
+    });
+  }, [keyword, kind, modules]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <Layout style={{ height: "100%", background: "#0b1220" }}>
+      <Layout.Header
+        style={{
+          background: "transparent",
+          padding: "16px 20px",
+          height: "auto",
+        }}
+      ></Layout.Header>
+
+      <Layout.Content style={{ padding: "0 20px 20px", overflow: "auto" }}>
+        <Row gutter={[16, 16]}>
+          {filtered.length === 0 ? (
+            <Col span={24}>
+              <Card style={{ background: "rgba(255,255,255,.06)" }}>
+                <Empty
+                  description={
+                    <span style={{ color: "rgba(230,240,255,.72)" }}>
+                      没有匹配的模块
+                    </span>
+                  }
+                />
+              </Card>
+            </Col>
+          ) : null}
+
+          {filtered.map((m) => (
+            <Col key={m.key} lg={8} sm={12} xl={6} xs={24}>
+              <Badge.Ribbon
+                color={m.kind === "cms" ? "geekblue" : "cyan"}
+                text={KIND_LABEL[m.kind]}
+              >
+                <Card
+                  hoverable
+                  style={{
+                    background: "rgba(255,255,255,.06)",
+                    borderColor: "rgba(255,255,255,.10)",
+                  }}
+                  styles={{
+                    body: {
+                      minHeight: 150,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 10,
+                    },
+                  }}
+                >
+                  <Space orientation="vertical" size={6} style={{ flex: 1 }}>
+                    <Typography.Title
+                      level={5}
+                      style={{ margin: 0, color: "#e6f0ff" }}
+                    >
+                      {m.name}
+                    </Typography.Title>
+                    <Typography.Paragraph
+                      ellipsis={{ rows: 2 }}
+                      style={{ margin: 0, color: "rgba(230,240,255,.72)" }}
+                    >
+                      {m.description}
+                    </Typography.Paragraph>
+                    <Space wrap size={[6, 6]}>
+                      {(m.tags ?? []).map((t) => (
+                        <Tag
+                          key={t}
+                          style={{
+                            background: "rgba(255,255,255,.08)",
+                            borderColor: "rgba(255,255,255,.14)",
+                            color: "rgba(230,240,255,.82)",
+                          }}
+                        >
+                          {t}
+                        </Tag>
+                      ))}
+                    </Space>
+                  </Space>
+
+                  <Divider
+                    style={{
+                      margin: "6px 0",
+                      borderColor: "rgba(255,255,255,.10)",
+                    }}
+                  />
+
+                  {m.openInNewTab ? (
+                    <a
+                      href={m.href}
+                      rel="noreferrer"
+                      style={{ color: "#8ab4ff", fontWeight: 600 }}
+                      target="_blank"
+                    >
+                      打开模块 →
+                    </a>
+                  ) : (
+                    <Link
+                      href={m.href}
+                      style={{ color: "#8ab4ff", fontWeight: 600 }}
+                    >
+                      进入模块 →
+                    </Link>
+                  )}
+                </Card>
+              </Badge.Ribbon>
+            </Col>
+          ))}
+        </Row>
+      </Layout.Content>
+    </Layout>
   );
 }
