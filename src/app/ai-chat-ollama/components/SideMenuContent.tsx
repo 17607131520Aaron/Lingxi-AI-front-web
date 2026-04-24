@@ -37,7 +37,6 @@ interface ISideMenuContentProps {
   onCreateSession: () => void;
   onSelectSession: (sessionId: string) => void;
   onDeleteSession: (sessionId: string) => void;
-  isReplying: boolean;
 }
 
 const SideMenuContent: React.FC<ISideMenuContentProps> = (props) => {
@@ -51,7 +50,6 @@ const SideMenuContent: React.FC<ISideMenuContentProps> = (props) => {
     onCreateSession,
     onSelectSession,
     onDeleteSession,
-    isReplying,
   } = props;
 
   const formatUpdatedAt = (updatedAt: number): string => {
@@ -106,7 +104,7 @@ const SideMenuContent: React.FC<ISideMenuContentProps> = (props) => {
     >
       <div className={cx("appLayoutSideMenu")}>
         <div className={cx("sideMenuContent")}>
-          <Button style={{ width: "100%" }} type="primary" icon={<PlusOutlined />} onClick={onCreateSession} disabled={isReplying}>
+          <Button style={{ width: "100%" }} type="primary" icon={<PlusOutlined />} onClick={onCreateSession}>
             新建会话
           </Button>
           <div className={cx("sessionList")}>

@@ -40,7 +40,6 @@ const AiChatPage: React.FC = () => {
           onCreateSession={handleCreateSession}
           onSelectSession={selectSession}
           onDeleteSession={handleDeleteSession}
-          isReplying={isReplying}
         />
       </div>
 
