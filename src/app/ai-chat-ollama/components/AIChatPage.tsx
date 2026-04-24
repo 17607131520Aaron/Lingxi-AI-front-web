@@ -1,5 +1,5 @@
 "use client";
-import { FC, useRef, useEffect } from "react";
+import { FC, useRef, useEffect, ReactNode } from "react";
 import { SendOutlined, RobotOutlined, UserOutlined } from "@ant-design/icons";
 import { Card, Space, Input, Typography, Button, Flex, Empty, Spin, Avatar } from "antd";
 import classNames from "classnames/bind";
@@ -37,6 +37,42 @@ const AIChatPage: FC = () => {
       messageListElement.scrollHeight - messageListElement.scrollTop - messageListElement.clientHeight;
     shouldAutoScrollRef.current = distanceToBottom <= 40;
   };
+
+  const renderMessages = (): ReactNode => {
+    if (messages.length === 0) {
+      return <Empty description="暂无消息，先发起一次提问吧" />;
+    }
+
+    return (
+      <Flex vertical gap={12}>
+        {messages.map((message) => {
+          const isUser = message.role === "user";
+          return (
+            <Flex key={message.id} align="start" gap={10} justify={isUser ? "end" : "start"}>
+              {!isUser && <Avatar icon={<RobotOutlined />} style={{ flexShrink: 0 }} />}
+              <Card
+                size="small"
+                style={{
+                  background: isUser ? "#e6f4ff" : "#fafafa",
+                  maxWidth: "80%",
+                }}
+              >
+                <Text style={{ whiteSpace: "pre-wrap" }}>{message.content}</Text>
+              </Card>
+              {isUser && <Avatar icon={<UserOutlined />} style={{ flexShrink: 0 }} />}
+            </Flex>
+          );
+        })}
+        {isReplying && (
+          <Flex align="center" gap={8}>
+            <Avatar icon={<RobotOutlined />} />
+            <Spin size="small" />
+            <Text type="secondary">AI 正在思考...</Text>
+          </Flex>
+        )}
+      </Flex>
+    );
+  };
   return (
     <div className={cx("ai-chat-page")}>
       {/*<div className={cx("ai-chat-page-header")}>标题部分</div>*/}
@@ -48,7 +84,7 @@ const AIChatPage: FC = () => {
           title={<Text strong>会话内容</Text>}
         >
           <div ref={messageListRef} className={cx("ai-chat-message-list")} onScroll={handleMessageListScroll}>
-            {/*{renderMessages()}*/}
+            {renderMessages()}
           </div>
         </Card>
       </div>
