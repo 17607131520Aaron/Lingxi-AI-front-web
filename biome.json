@@ -7,19 +7,56 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!node_modules", "!.next", "!dist", "!build"]
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/.next",
+      "!**/dist",
+      "!**/build",
+      "!**/coverage",
+      "!**/public",
+      "!**/config",
+      "!**/scripts",
+      "!types/**/*.ts",
+      "!**/*.min.js"
+    ]
   },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
-    "indentWidth": 2
+    "indentWidth": 2,
+    "lineWidth": 120
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "jsxQuoteStyle": "double",
+      "trailingCommas": "all",
+      "semicolons": "always",
+      "arrowParentheses": "always"
+    }
+  },
+  "json": {
+    "formatter": {
+      "trailingCommas": "none"
+    }
   },
   "linter": {
     "enabled": true,
     "rules": {
       "recommended": true,
       "suspicious": {
-        "noUnknownAtRules": "off"
+        "noUnknownAtRules": "off",
+        "noExplicitAny": "error"
+      },
+      "style": {
+        "useImportType": "error",
+        "useTemplate": "error"
+      },
+      "correctness": {
+        "useExhaustiveDependencies": "warn",
+        "noUnusedImports": "error",
+        "noUnusedVariables": "warn"
       }
     },
     "domains": {

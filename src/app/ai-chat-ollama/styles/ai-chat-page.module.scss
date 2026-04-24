@@ -1,0 +1,21 @@
+.ai-chat-page{
+    width: 100%;
+    height: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+// .ai-chat-page-header{
+
+// }
+
+.ai-chat-page-content{
+    flex: 1;
+}
+
+.ai-chat-page-footer{
+    width: 100%;
+}

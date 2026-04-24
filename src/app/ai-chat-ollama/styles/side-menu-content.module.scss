@@ -1,0 +1,350 @@
+.side-menu-content {
+  width: 100%;
+  height: 100%;
+  background: #001529;
+  border-right: 1px solid rgb(5 5 5 / 0.06);
+  box-shadow: none;
+}
+
+.appLayoutSideMenu {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sideMenuContent {
+  width: 100%;
+  flex: 1;
+  padding: 8px 8px 16px;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+.sideMenuFooter {
+  padding: 10px 12px 12px;
+  border-top: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.userCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 10px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.06);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background: rgb(255 255 255 / 0.1);
+  }
+}
+
+.userAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  color: rgb(255 255 255 / 0.9);
+  background: rgb(255 255 255 / 0.12);
+  flex-shrink: 0;
+}
+
+.userMeta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.userName {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 18px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userRole {
+  font-size: 12px;
+  line-height: 16px;
+  color: rgb(255 255 255 / 0.65);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgb(255 255 255 / 0.55);
+
+  :global(.anticon) {
+    font-size: 13px;
+  }
+}
+
+.userActionTrigger {
+  border: none;
+  padding: 0;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  background: transparent;
+  border-radius: 6px;
+  opacity: 0.82;
+  cursor: pointer;
+  transition:
+          background-color 0.2s ease,
+          opacity 0.2s ease,
+          color 0.2s ease;
+}
+
+.userActionTrigger:hover {
+  background: rgb(255 255 255 / 0.08);
+  color: rgb(255 255 255 / 0.82);
+  opacity: 1;
+}
+
+.collapseBtn {
+  margin-top: 10px;
+  width: 100%;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  background: transparent;
+  color: rgb(255 255 255 / 0.85);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition:
+          background-color 0.2s ease,
+          border-color 0.2s ease;
+
+  &:hover {
+    background: rgb(255 255 255 / 0.06);
+    border-color: rgb(255 255 255 / 0.18);
+  }
+
+  :global(.anticon) {
+    font-size: 16px;
+  }
+}
+
+.collapseBtnText {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.menuHeader {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 54px;
+  gap: 12px;
+  padding: 0 16px;
+  box-sizing: border-box;
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+  background: transparent;
+  user-select: none;
+}
+
+.menuHeaderIcon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  box-shadow: none;
+  flex-shrink: 0;
+}
+
+.menuHeaderLogo {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 6px;
+}
+
+.menuHeaderTitle {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.menuHeaderTitleText {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 24px;
+  color: #fff;
+  letter-spacing: 0.2px;
+  text-shadow: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menuHeaderTitleSubtitle {
+  display: none;
+}
+
+.menu {
+  background: transparent;
+  border-inline-end: none;
+}
+
+.menu :global(.ant-menu) {
+  background: transparent;
+}
+
+.menu :global(.ant-menu-inline) {
+  border-inline-end: none;
+}
+
+.menu :global(.ant-menu-item),
+.menu :global(.ant-menu-submenu-title) {
+  height: 40px;
+  margin: 4px 8px;
+  padding-inline: 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 40px;
+  transition:
+          background-color 0.2s ease,
+          color 0.2s ease,
+          transform 0.2s ease;
+  color: rgb(255 255 255 / 0.85);
+}
+
+.menu :global(.ant-menu-item .anticon),
+.menu :global(.ant-menu-submenu-title .anticon) {
+  min-width: 14px;
+  margin-right: 10px;
+  font-size: 14px;
+  color: inherit;
+}
+
+.menu :global(.ant-menu-item:hover),
+.menu :global(.ant-menu-submenu-title:hover) {
+  color: #fff;
+  background: rgb(255 255 255 / 0.12);
+}
+
+.menu :global(.ant-menu-item-selected) {
+  color: #fff;
+  font-weight: 500;
+  background: #1677ff;
+  box-shadow: none;
+}
+
+.menu :global(.ant-menu-item-selected::after) {
+  display: none;
+}
+
+.menu :global(.ant-menu-submenu-selected > .ant-menu-submenu-title) {
+  color: #fff;
+  background: rgb(255 255 255 / 0.12);
+}
+
+.menu :global(.ant-menu-submenu-arrow) {
+  color: rgb(255 255 255 / 0.65);
+}
+
+.menu :global(.ant-menu-sub.ant-menu-inline) {
+  margin-top: 2px;
+  margin-bottom: 4px;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+}
+
+.menu :global(.ant-menu-sub.ant-menu-inline .ant-menu-item) {
+  height: 36px;
+  margin: 2px 8px;
+  padding-inline: 16px;
+  line-height: 36px;
+  border-radius: 6px;
+  color: rgb(255 255 255 / 0.65);
+}
+
+.menu :global(.ant-menu-sub.ant-menu-inline .ant-menu-item .anticon) {
+  font-size: 13px;
+}
+
+.menu :global(.ant-menu-sub.ant-menu-inline .ant-menu-item-selected) {
+  color: #fff;
+}
+
+.sideMenuContent::-webkit-scrollbar {
+  width: 10px;
+}
+
+.sideMenuContent::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.16);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.sideMenuContent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.side-menu-content:global(.ant-layout-sider-collapsed) {
+  .menuHeader {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .menuHeaderTitle {
+    display: none;
+  }
+
+  .menuHeaderIcon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+  }
+
+  .sideMenuContent {
+    padding-inline: 8px;
+  }
+
+  .sideMenuFooter {
+    padding: 10px 8px 12px;
+  }
+
+  .userCard {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .userMeta,
+  .userActions,
+  .collapseBtnText {
+    display: none;
+  }
+
+  .collapseBtn {
+    border-radius: 10px;
+  }
+}

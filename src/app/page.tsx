@@ -1,26 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-
-import {
-  Badge,
-  Button,
-  Card,
-  Col,
-  Divider,
-  Empty,
-  Input,
-  Layout,
-  Row,
-  Segmented,
-  Space,
-  Tag,
-  Typography,
-} from "antd";
+import { Badge, Card, Col, Divider, Empty, Layout, Row, Space, Tag, Typography } from "antd";
 import Link from "next/link";
-
-import { fetchModules } from "@/mock/appMock";
+import { useEffect, useMemo, useState } from "react";
 import type { ModuleEntry, ModuleKind } from "@/mock/appMock";
+import { fetchModules } from "@/mock/appMock";
 
 const KIND_LABEL: Record<ModuleKind, string> = {
   site: "站点",
@@ -29,8 +13,8 @@ const KIND_LABEL: Record<ModuleKind, string> = {
 };
 
 export default function HomePage() {
-  const [keyword, setKeyword] = useState("");
-  const [kind, setKind] = useState<"all" | ModuleKind>("all");
+  const [keyword, _setKeyword] = useState("");
+  const [kind, _setKind] = useState<"all" | ModuleKind>("all");
   const [modules, setModules] = useState<ModuleEntry[]>([]);
 
   useEffect(() => {
@@ -50,8 +34,7 @@ export default function HomePage() {
       if (!kw) {
         return true;
       }
-      const hay =
-        `${m.name} ${m.description} ${(m.tags ?? []).join(" ")}`.toLowerCase();
+      const hay = `${m.name} ${m.description} ${(m.tags ?? []).join(" ")}`.toLowerCase();
       return hay.includes(kw);
     });
   }, [keyword, kind, modules]);
@@ -71,23 +54,14 @@ export default function HomePage() {
           {filtered.length === 0 ? (
             <Col span={24}>
               <Card style={{ background: "rgba(255,255,255,.06)" }}>
-                <Empty
-                  description={
-                    <span style={{ color: "rgba(230,240,255,.72)" }}>
-                      没有匹配的模块
-                    </span>
-                  }
-                />
+                <Empty description={<span style={{ color: "rgba(230,240,255,.72)" }}>没有匹配的模块</span>} />
               </Card>
             </Col>
           ) : null}
 
           {filtered.map((m) => (
             <Col key={m.key} lg={8} sm={12} xl={6} xs={24}>
-              <Badge.Ribbon
-                color={m.kind === "cms" ? "geekblue" : "cyan"}
-                text={KIND_LABEL[m.kind]}
-              >
+              <Badge.Ribbon color={m.kind === "cms" ? "geekblue" : "cyan"} text={KIND_LABEL[m.kind]}>
                 <Card
                   hoverable
                   style={{
@@ -104,16 +78,10 @@ export default function HomePage() {
                   }}
                 >
                   <Space orientation="vertical" size={6} style={{ flex: 1 }}>
-                    <Typography.Title
-                      level={5}
-                      style={{ margin: 0, color: "#e6f0ff" }}
-                    >
+                    <Typography.Title level={5} style={{ margin: 0, color: "#e6f0ff" }}>
                       {m.name}
                     </Typography.Title>
-                    <Typography.Paragraph
-                      ellipsis={{ rows: 2 }}
-                      style={{ margin: 0, color: "rgba(230,240,255,.72)" }}
-                    >
+                    <Typography.Paragraph ellipsis={{ rows: 2 }} style={{ margin: 0, color: "rgba(230,240,255,.72)" }}>
                       {m.description}
                     </Typography.Paragraph>
                     <Space wrap size={[6, 6]}>
@@ -140,19 +108,11 @@ export default function HomePage() {
                   />
 
                   {m.openInNewTab ? (
-                    <a
-                      href={m.href}
-                      rel="noreferrer"
-                      style={{ color: "#8ab4ff", fontWeight: 600 }}
-                      target="_blank"
-                    >
+                    <a href={m.href} rel="noreferrer" style={{ color: "#8ab4ff", fontWeight: 600 }} target="_blank">
                       打开模块 →
                     </a>
                   ) : (
-                    <Link
-                      href={m.href}
-                      style={{ color: "#8ab4ff", fontWeight: 600 }}
-                    >
+                    <Link href={m.href} style={{ color: "#8ab4ff", fontWeight: 600 }}>
                       进入模块 →
                     </Link>
                   )}
