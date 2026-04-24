@@ -15,7 +15,10 @@ export interface SessionMessageApi {
 
 export const listSessions = () => http.get<ChatSession[]>("/ai/sessions");
 
-export const createSession = () => http.post<ChatSession>("/ai/sessions");
+export const createSession = (sessionId?: string) =>
+  http.post<ChatSession>("/ai/sessions", undefined, {
+    params: sessionId ? { sessionId } : undefined,
+  });
 
 export const listSessionMessages = (sessionId: string) =>
   http.get<SessionMessageApi[]>(`/ai/sessions/${sessionId}/messages`);

@@ -1,10 +1,17 @@
 import { message } from "antd";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { io, type Socket } from "socket.io-client";
-import { createSession as createSessionApi, deleteSession as deleteSessionApi, listSessionMessages, listSessions } from "@/api/aiChat";
+import {
+  createSession as createSessionApi,
+  deleteSession as deleteSessionApi,
+  listSessionMessages,
+  listSessions,
+} from "@/api/aiChat";
+import { useUserStore } from "@/store/userStore";
 import { clearAuthSession } from "@/utils/authSession";
 import { publishNavigate } from "@/utils/navigationBus";
 import { ApiRequestError } from "@/utils/request";
+import { tokenStorage } from "@/utils/tokenStorage";
 
 type MessageRole = "user" | "assistant";
 
@@ -24,6 +31,7 @@ interface SocketChatEvent {
 }
 
 const AI_CHAT_SOCKET_URL = process.env.NEXT_PUBLIC_AI_CHAT_SOCKET_URL ?? "http://127.0.0.1:9011";
+const DEFAULT_BOOTSTRAP_SESSION_ID = "default";
 const TYPING_INTERVAL_MS = 25;
 const CHARS_PER_TICK = 1;
 const TITLE_STOPWORDS =
@@ -32,6 +40,7 @@ const TITLE_INTENT_PATTERN =
   /(出装|铭文|连招|打法|思路|教学|攻略|技巧|推荐|对线|克制|上分|节奏|阵容|发育|打野|辅助|装备|设置|问题|方案|总结|对比|区别)/;
 
 const useAIChat = () => {
+  const username = useUserStore((state) => state.username);
   const handleUnauthorized = useCallback(() => {
     void clearAuthSession().then(() => publishNavigate({ to: "/login", replace: true }));
   }, []);
@@ -91,7 +100,9 @@ const useAIChat = () => {
     }
 
     setMessages((prev) => {
-      const next = prev.map((item) => (item.id === assistantId ? { ...item, content: `${item.content}${content}` } : item));
+      const next = prev.map((item) =>
+        item.id === assistantId ? { ...item, content: `${item.content}${content}` } : item,
+      );
       const sessionId = sessionIdRef.current;
       if (sessionId) {
         messagesBySessionRef.current[sessionId] = next;
@@ -106,19 +117,22 @@ const useAIChat = () => {
     return list;
   }, []);
 
-  const createSession = useCallback(async (): Promise<string> => {
-    const body = await createSessionApi();
-    const created = body.sessionId ?? "";
-    if (!created) {
-      throw new Error("新建会话失败");
-    }
-    const list = await refreshSessions();
-    const exists = list.some((item) => item.sessionId === created);
-    if (!exists) {
-      setSessions((prev) => [{ sessionId: created, title: "新会话", updatedAt: Date.now() }, ...prev]);
-    }
-    return created;
-  }, [refreshSessions]);
+  const createSession = useCallback(
+    async (preferredSessionId?: string): Promise<string> => {
+      const body = await createSessionApi(preferredSessionId);
+      const created = body.sessionId ?? "";
+      if (!created) {
+        throw new Error("新建会话失败");
+      }
+      const list = await refreshSessions();
+      const exists = list.some((item) => item.sessionId === created);
+      if (!exists) {
+        setSessions((prev) => [{ sessionId: created, title: "新会话", updatedAt: Date.now() }, ...prev]);
+      }
+      return created;
+    },
+    [refreshSessions],
+  );
 
   const loadSessionMessages = useCallback(async (sessionId: string) => {
     if (!sessionId) {
@@ -320,9 +334,11 @@ const useAIChat = () => {
 
     try {
       const socket = await ensureSocketConnected();
+      const token = await tokenStorage.getToken();
       socket.emit("chat:message", {
         sessionId,
         message: question,
+        token,
         enableWebSearch,
       });
       await refreshSessions();
@@ -388,7 +404,10 @@ const useAIChat = () => {
       try {
         await deleteSessionApi(sessionId);
       } catch (error) {
-        if (error instanceof ApiRequestError && (error.status === 401 || error.code === 40102 || error.code === 40103)) {
+        if (
+          error instanceof ApiRequestError &&
+          (error.status === 401 || error.code === 40102 || error.code === 40103)
+        ) {
           handleUnauthorized();
           return;
         }
@@ -415,17 +434,35 @@ const useAIChat = () => {
       }
       message.success("会话已删除");
     },
-    [createSession, currentSessionId, handleUnauthorized, interruptCurrentReply, isReplying, loadSessionMessages, refreshSessions],
+    [
+      createSession,
+      currentSessionId,
+      handleUnauthorized,
+      interruptCurrentReply,
+      isReplying,
+      loadSessionMessages,
+      refreshSessions,
+    ],
   );
 
   useEffect(() => {
+    interruptCurrentReply();
+    setInputValue("");
+    setMessages([]);
+    setSessions([]);
+    setCurrentSessionId("");
+    messagesBySessionRef.current = {};
+    if (!username) {
+      setIsSessionLoading(false);
+      return;
+    }
     const bootstrap = async () => {
       try {
         setIsSessionLoading(true);
         const sessionList = await refreshSessions();
         let targetSessionId = sessionList[0]?.sessionId ?? "";
         if (!targetSessionId) {
-          targetSessionId = await createSession();
+          targetSessionId = await createSession(DEFAULT_BOOTSTRAP_SESSION_ID);
         }
         setCurrentSessionId(targetSessionId);
         sessionIdRef.current = targetSessionId;
@@ -437,7 +474,7 @@ const useAIChat = () => {
       }
     };
     void bootstrap();
-  }, [createSession, loadSessionMessages, refreshSessions]);
+  }, [createSession, interruptCurrentReply, loadSessionMessages, refreshSessions, username]);
 
   useEffect(() => {
     return () => {
